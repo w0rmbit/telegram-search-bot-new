@@ -171,18 +171,27 @@ def handle_search_all(message):
     bot.send_message(chat_id, f"🔎 Searching for `{target_domain}` across {len(links)} files...", parse_mode="Markdown")
     found_lines_stream = io.BytesIO()
     total_matches = 0
+    match_counts = {}
     pattern = re.compile(r'\b' + re.escape(target_domain) + r'\b', re.IGNORECASE)
 
     for fname, url in links.items():
+        match_counts[fname] = 0
         try:
             response = requests.get(url, stream=True, timeout=(10, 60))
             response.raise_for_status()
             for line in response.iter_lines(decode_unicode=True):
                 if line and pattern.search(line):
                     found_lines_stream.write(f"[{fname}] {line}\n".encode("utf-8"))
+                    match_counts[fname] += 1
                     total_matches += 1
         except Exception as e:
             bot.send_message(chat_id, f"⚠️ Error searching `{fname}`: {e}")
+
+    # Build summary
+    summary_lines = [f"📊 Summary for `{target_domain}`:"]
+    for fname, count in match_counts.items():
+        summary_lines.append(f"- `{fname}`: {count} match{'es' if count != 1 else ''}")
+    bot.send_message(chat_id, "\n".join(summary_lines), parse_mode="Markdown")
 
     if total_matches > 0:
         found_lines_stream.seek(0)
@@ -190,7 +199,7 @@ def handle_search_all(message):
             chat_id,
             found_lines_stream,
             visible_file_name=f"search_all_{target_domain}.txt",
-            caption=f"✅ Found {total_matches} matches for `{target_domain}` across all files",
+            caption=f"✅ Found {total_matches} total matches across all files",
             parse_mode="Markdown"
         )
     else:
