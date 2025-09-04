@@ -207,19 +207,4 @@ def stream_search_with_live_progress(chat_id, url, target_domain, fname):
                 found_lines_stream,
                 visible_file_name=f"search_results_{target_domain}.txt",
                 caption=f"✅ Found {found_lines_count} matches for `{target_domain}` in `{fname}`",
-                parse_mode="Markdown"
-            )
-        else:
-            bot.send_message(chat_id, f"❌ No results for `{target_domain}` in `{fname}`", parse_mode="Markdown")
-
-    except Exception as e:
-        bot.send_message(chat_id, f"⚠️ Error: {e}")
-
-    finally:
-        send_main_menu(chat_id)
-
-# --- Run Flask + Bot ---
-if __name__ == '__main__':
-    print("🤖 Bot is running with Flask health check...")
-    threading.Thread(target=run_flask).start()
-    bot.polling(none_stop=True)
+                parse_mode="Markdown
